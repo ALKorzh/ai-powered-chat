@@ -1,0 +1,38 @@
+header {
+    height: 7vh;
+    border-bottom: 2px solid #000000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.showChatList {
+    grid-row: 1;
+    grid-column: 2;
+}
+
+.headerBtn > img {
+    height: 40px;
+}
+
+.headerBtn {
+    background-color: inherit;
+    border: none;
+    width: fit-content;
+}
+
+.controlPanel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hideChatListBtn {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+}
+
+
+
+
