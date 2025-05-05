@@ -1,0 +1,51 @@
+.messageForm {
+    border: 2px solid #000;
+    border-radius: 0.5rem;
+    padding: 10px;
+    min-height: 5vh;
+    max-height: fit-content;
+    max-width: 40%;
+}
+
+.activeRecordForm {
+    display: grid;
+    align-items: center;
+    grid-template-columns: 9fr 1fr;
+}
+
+.inactiveRecordForm {
+    display: grid;
+    align-items: center;
+    grid-template-columns: 2fr 6fr 1fr 1fr;
+}
+
+.messageInput {
+    border-radius: 0.5rem;
+    border: none;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    white-space: wrap;
+    max-width: 100%;
+    min-height: 20px;
+    line-height: 20px;
+}
+
+.sendMessageBtn {
+    width: 40px;
+    border: none;
+    background-color: inherit;
+    justify-self: center;
+}
+
+.sendMessageBtn > img {
+    width: 100%;
+}
+
+.audioVisualizer {
+    width: 100%;
+    height: 50px;
+    background-color: #f3f3f3;
+    border-radius: 8px;
+}
+

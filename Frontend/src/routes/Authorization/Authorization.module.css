@@ -1,0 +1,124 @@
+.authorizationForm {
+    width: 40%;
+    height: 100%;
+    margin: 100px auto;
+    display: flex;
+    gap: 2rem;
+    flex-direction: column;
+    align-items: center;
+}
+
+label {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    font-size: 14px;
+    color: #000;
+    transition: 0.3s;
+    pointer-events: none;
+}
+
+.registrationInput:focus + label,
+.registrationInput:not(:placeholder-shown) + label {
+    top: 0;
+    font-size: 12px;
+    color: #000;
+}
+
+.inputContainer > input {
+    border: 2px solid #000;
+    border-radius: 0.5rem;
+    width: 100%;
+    padding: 10px 2.5rem 10px 10px;
+    font-size: 16px;
+    outline: none;
+}
+
+.inputContainer .inputError {
+    border: 2px solid red;
+}
+
+.inputContainer .labelError {
+    color: red;
+}
+
+.inputContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 40%;
+    margin: 0 auto;
+}
+
+a, a:visited {
+    text-decoration: none;
+    color: #00e;
+}
+
+.formField {
+    width: 40%;
+}
+
+.formField > p {
+    color: red;
+    font-size: 10pt;
+}
+
+.inputContainer {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.authorizationBtn {
+    width: 40%;
+    height: 40px;
+    background-color: #4141fb;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 700;
+}
+
+.authorizationBtn:hover {
+    background-color: #6868fb;
+}
+
+.inputContainer img {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: 1.5rem;
+    max-height: 1.5rem;
+    cursor: pointer;
+}
+
+.withGoogleBtn {
+    width: 40%;
+    border-radius: 0.5rem;
+    background-color: #fff;
+    border: 2px solid #000;
+    display: grid;
+    grid-template-columns: 1fr 4fr;
+    align-items: center;
+    justify-items: start;
+    color: #000;
+    font-weight: 400;
+}
+
+.withGoogleBtn:hover {
+    background-color: #e8e8e8;
+}
+
+.withGoogleBtn > img {
+    justify-self: center;
+    width: 70%;
+    height: 70%;
+}
+
