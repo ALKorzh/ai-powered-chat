@@ -1,37 +1,54 @@
 import React, {useState} from 'react';
 import classes from './Registration.module.css'
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {validateRegistration} from "../../utils/validators/registrationValidator.js";
+import axios from 'axios';
 
 const Registration = () => {
-
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [errors, setErrors] = useState({})
+    const navigate = useNavigate();
 
-    const handleClick = (e) => {
+    const handleClick = async (e) => {
         e.preventDefault()
         const validationErrors = validateRegistration(username, email, password, confirmPassword)
 
         if (validationErrors) {
             setErrors(validationErrors)
-            console.log(password, confirmPassword)
-            console.log(errors)
         } else {
             setErrors({})
+            try {
+                const response = await axios.post('http://localhost:8000/auth/register/', {
+                    email: email,
+                    password: password
+                });
+                
+                if (response.status === 200) {
+                    navigate('/authorization');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                if (error.response?.status === 400) {
+                    setErrors({ auth: ['Registration failed. Please check your data.'] });
+                } else {
+                    setErrors({ auth: ['Server error. Please try again later.'] });
+                }
+            }
         }
     }
 
     const handleChange = (e, val, setVal) => {
         setVal(e.target.value)
-        setErrors(prev => ({...prev, [val]: null}))
+        setErrors(prev => ({...prev, [val]: null, auth: null}))
     }
 
     return (
         <form className={classes.registrationForm}>
             <h1>Create an account</h1>
+            {errors.auth && <p className={classes.authError}>{errors.auth[0]}</p>}
             <div className={classes.formField}>
                 <div className={classes.inputContainer}>
                     <input className={errors.username ? `${classes.inputError} ${classes.registrationInput}` : classes.registrationInput}
