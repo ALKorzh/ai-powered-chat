@@ -1,8 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, constr
 
 class UserCreate(BaseModel):
-    email: str
-    password: str
+    email: EmailStr
+    password: constr(min_length=8)
+    username: constr(min_length=4)
 
 class Token(BaseModel):
     access_token: str

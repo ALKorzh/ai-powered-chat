@@ -8,7 +8,8 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173",  # Добавьте домен вашего React приложения
+    "http://localhost:5173",
+    "http://localhost:5174",
     # "https://your-production-frontend.com", # Пример для продакшена
 ]
 
