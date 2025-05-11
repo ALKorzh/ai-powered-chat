@@ -1,9 +1,11 @@
-from pydantic import BaseModel, EmailStr, constr
+from pydantic import BaseModel, EmailStr, Field
 
+
+# Models for Pydantic validation
 class UserCreate(BaseModel):
     email: EmailStr
-    password: constr(min_length=8)
-    username: constr(min_length=4)
+    password: str = Field(..., min_length=8)
+    username: str = Field(..., min_length=4)
 
 class Token(BaseModel):
     access_token: str
