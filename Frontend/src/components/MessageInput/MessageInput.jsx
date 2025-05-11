@@ -1,14 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react';
 import classes from './MessageInput.module.css';
 import VoiceVisualizer from '../VoiceVisualizer/VoiceVisualizer.jsx';
+import axios from "axios";
 
-const MessageInput = ({ isActive, setIsActive }) => {
+const MessageInput = ({ isActive, setIsActive, chatId, userId }) => {
     const [textMessage, setTextMessage] = useState('');
     const textareaRef = useRef(null);
     const [recordTime, setRecordTime] = useState(0);
     const timerRef = useRef(null);
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
+
+    const handleSendTextMessage = async () => {
+        if (!textMessage.trim() || !userId || !chatId) return;
+
+        try {
+            const response = await axios.post(`http://localhost:8000/${userId}/${chatId}`, {
+                message: textMessage,
+                userId,
+                chatId,
+            });
+            console.log('Text message sent!', response.data);
+            setTextMessage('');
+        } catch (error) {
+            console.error('Text message failed:', error);
+        }
+    };
 
     useEffect(() => {
         if (isActive) {
@@ -44,7 +61,7 @@ const MessageInput = ({ isActive, setIsActive }) => {
         const startRecording = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const mediaRecorder = new MediaRecorder(stream);
+                const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/ogg; codecs=opus' });
                 mediaRecorderRef.current = mediaRecorder;
                 audioChunksRef.current = [];
 
@@ -54,18 +71,25 @@ const MessageInput = ({ isActive, setIsActive }) => {
                     }
                 };
 
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-                    const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/ogg; codecs=opus' });
+                    const audioFile = new File([audioBlob], 'recording.ogg', { type: 'audio/ogg' });
 
                     const formData = new FormData();
                     formData.append('audio', audioFile);
+                    formData.append('userId', userId);
+                    formData.append('chatId', chatId);
 
-                    fetch('/upload', {
-                        method: 'POST',
-                        body: formData
-                    }).then(response => console.log('Uploaded!', response))
-                        .catch(error => console.error('Upload failed:', error));
+                    try {
+                        const response = await axios.post('http://localhost:8000/upload', formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                            },
+                        });
+                        console.log('Audio uploaded!', response.data);
+                    } catch (error) {
+                        console.error('Audio upload failed:', error);
+                    }
                 };
 
                 mediaRecorder.start();
@@ -86,7 +110,7 @@ const MessageInput = ({ isActive, setIsActive }) => {
                 mediaRecorderRef.current = null;
             }
         };
-    }, [isActive]);
+    }, [isActive, userId, chatId]);
 
     const formatTime = (time) => {
         const ms = String(time % 1000).padStart(3, '0').slice(0, 2);
@@ -95,15 +119,20 @@ const MessageInput = ({ isActive, setIsActive }) => {
         return `${min}:${sec}:${ms}`;
     };
 
-    const handleButtonClick = () => {
-        if (textMessage) return;
-        setIsActive(prev => !prev);
+    const handleButtonClick = async (e) => {
+        e.preventDefault();
+
+        if (textMessage.trim()) {
+            await handleSendTextMessage();
+        } else {
+            setIsActive(prev => !prev);
+        }
     };
 
     return (
         <form className={classes.messageForm}>
             {!isActive ? (
-                <div className={classes.activeRecordForm}>
+                <div className={classes.inactiveRecordForm}>
                     <textarea
                         ref={textareaRef}
                         className={classes.messageInput}
@@ -123,15 +152,19 @@ const MessageInput = ({ isActive, setIsActive }) => {
                     </button>
                 </div>
             ) : (
-                <div className={classes.inactiveRecordForm}>
+                <div className={classes.activeRecordForm}>
                     <span>{formatTime(recordTime)}</span>
                     <div>
                         <VoiceVisualizer isActive={isActive} />
                     </div>
-                    <button className={classes.sendMessageBtn}>
+                    <button onClick={handleButtonClick}
+                            type='button'
+                            className={classes.sendMessageBtn}>
                         <img src="/images/send_message.svg" alt="send" />
                     </button>
-                    <button className={classes.sendMessageBtn} type="button" onClick={() => setIsActive(false)}>
+                    <button className={classes.sendMessageBtn}
+                            type="button"
+                            onClick={() => setIsActive(false)}>
                         <img src="/images/stop_message.svg" alt="stop" />
                     </button>
                 </div>

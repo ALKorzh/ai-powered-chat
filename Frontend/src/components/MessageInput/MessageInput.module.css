@@ -4,16 +4,16 @@
     padding: 10px;
     min-height: 5vh;
     max-height: fit-content;
-    max-width: 40%;
+    width: 40%;
 }
 
-.activeRecordForm {
+.inactiveRecordForm {
     display: grid;
     align-items: center;
     grid-template-columns: 9fr 1fr;
 }
 
-.inactiveRecordForm {
+.activeRecordForm {
     display: grid;
     align-items: center;
     grid-template-columns: 2fr 6fr 1fr 1fr;
@@ -49,3 +49,6 @@
     border-radius: 8px;
 }
 
+.userEmail {
+    text-align: start;
+}
