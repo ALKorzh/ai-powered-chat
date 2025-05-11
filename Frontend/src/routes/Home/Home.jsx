@@ -4,36 +4,29 @@ import Footer from "../../components/Footer/Footer.jsx";
 import ChatList from "../../components/ChatList/ChatList.jsx";
 import ChatItem from "../../components/ChatItem/ChatItem.jsx";
 import classes from './Home.module.css'
-import axios from "axios";
+import {useNavigate} from "react-router-dom";
 
 const Home = () => {
 
-    const [userId, setUserId] = useState(null)
-    const [chatId, setChatId] = useState(null)
-    const [isChatListVisible, setIsChatListVisible] = useState(true)
+    const [isChatListVisible, setIsChatListVisible] = useState(false)
     const [isRecordActive, setIsRecordActive] = useState(false )
     const [isOpenUserInfo, setIsOpenUserInfo] = useState(false)
 
-    useEffect(() => {
-        const fetchIds = async () => {
-            try {
-                const response = await axios.get('http://localhost:8000/get-ids');
-                setUserId(response.data.userId);
-                setChatId(response.data.chatId);
-            } catch (error) {
-                console.error('Failed to fetch IDs:', error);
-            }
-        };
-
-        fetchIds();
-    }, []);
+    // const navigate = useNavigate();
+    //
+    // useEffect(() => {
+    //     const token = localStorage.getItem('token');
+    //     if (!token) {
+    //         navigate('/authorization');
+    //     }
+    // }, []);
 
 
     return (
         <div className={isChatListVisible ? classes.showAside : classes.hideAside}>
-            <Header isChatListVisible={isChatListVisible} setIsChatListVisible={setIsChatListVisible} setIsOpenUserInfo={setIsOpenUserInfo} isOpenUserInfo={isOpenUserInfo} userId={userId}/>
+            <Header isChatListVisible={isChatListVisible} setIsChatListVisible={setIsChatListVisible} setIsOpenUserInfo={setIsOpenUserInfo} isOpenUserInfo={isOpenUserInfo} />
             <ChatList isVisible={isChatListVisible}/>
-            <ChatItem isVisible={isChatListVisible} isRecordActive={isRecordActive} setIsRecordActive={setIsRecordActive} userId={userId} chatId={chatId}/>
+            <ChatItem isVisible={isChatListVisible} isRecordActive={isRecordActive} setIsRecordActive={setIsRecordActive}/>
             <Footer isVisible={isChatListVisible}/>
         </div>
     );
