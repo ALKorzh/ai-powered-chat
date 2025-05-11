@@ -1,3 +1,4 @@
+from app.api.v1 import auth, chat
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
@@ -9,9 +10,10 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+# Configure CORS
 origins = [
-    "http://localhost:5173",  # Добавьте домен вашего React приложения
-    # "https://your-production-frontend.com", # Пример для продакшена
+    "http://localhost:5173",
+    # "https://your-production-frontend.com", # Example for production
 ]
 
 app.add_middleware(
@@ -37,7 +39,8 @@ oauth = init_oauth()
 app.state.oauth = oauth
 
 # Include routers
-from app.api.v1 import auth, chat
+
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])
+

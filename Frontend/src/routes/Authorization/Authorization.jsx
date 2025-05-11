@@ -46,6 +46,16 @@ const Authorization = () => {
         }
     }
 
+    const handleGoogleLogin = async (e) => {
+        e.preventDefault();
+        try {
+            window.location.href = 'http://localhost:8000/auth/login/google';
+        } catch (error) {
+            console.error('Google login error:', error);
+            setErrors({ auth: ['Failed to initiate Google login'] });
+        }
+    }
+
     const handleChange = (e, val, setVal) => {
         setVal(e.target.value)
         setErrors(prev => ({...prev, [val]: null, auth: null}))
@@ -101,7 +111,10 @@ const Authorization = () => {
 
             <p>Dont have an account? <Link to='/registration'>Sign up</Link></p>
 
-            <button className={classes.withGoogleBtn}>
+            <button 
+                className={classes.withGoogleBtn}
+                onClick={handleGoogleLogin}
+                type="button">
                 <img src="/images/google_icon.svg" alt="google"/>
                 <p>Continue with Google</p>
             </button>
