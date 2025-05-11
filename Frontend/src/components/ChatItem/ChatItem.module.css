@@ -1,15 +1,9 @@
 .chatItem {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    padding: 1rem;
+    width: calc(100% - 2rem);
+    height: calc(100% - 2rem);
     align-items: center;
-}
 
-.showChatList {
-    grid-row: 2;
-    grid-column: 2;
-}
-
-.hideChatList {
-    flex-shrink: 0;
 }

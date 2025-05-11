@@ -3,17 +3,17 @@ import classes from './Header.module.css'
 import UserInfoModal from "../UserInfoModal/UserInfoModal.jsx";
 
 
-const Header = ({isChatListVisible, setIsChatListVisible, isOpenUserInfo, setIsOpenUserInfo, userId}) => {
+const Header = ({isChatListVisible, isOpenUserInfo, setIsOpenUserInfo}) => {
     return (
         <header className={isChatListVisible ? classes.showChatList : ''}>
             <div className={classes.controlPanel}>
-                <button
-                    className={isChatListVisible ? `${classes.hideChatListBtn} ${classes.headerBtn}` : classes.headerBtn}
-                    onClick={() => setIsChatListVisible(!isChatListVisible)}>
-                    <img
-                        src={isChatListVisible ? '/images/hide_chats.svg' : '/images/show_chats.svg'}
-                        alt={isChatListVisible ? 'close' : 'show'}/>
-                </button>
+                {/*<button*/}
+                {/*    // className={isChatListVisible ? `${classes.hideChatListBtn} ${classes.headerBtn}` : classes.headerBtn}*/}
+                {/*    onClick={() => setIsChatListVisible(!isChatListVisible)}>*/}
+                {/*    <img*/}
+                {/*        src={isChatListVisible ? '/images/hide_chats.svg' : '/images/show_chats.svg'}*/}
+                {/*        alt={isChatListVisible ? 'close' : 'show'}/>*/}
+                {/*</button>*/}
 
                 <h1>EnglishTutor</h1>
             </div>
@@ -22,7 +22,7 @@ const Header = ({isChatListVisible, setIsChatListVisible, isOpenUserInfo, setIsO
                 <img src="/images/user_icon.svg" alt="user"/>
             </button>
 
-            <UserInfoModal setIsActive={setIsOpenUserInfo} isActive={isOpenUserInfo} userId={userId}/>
+            <UserInfoModal setIsActive={setIsOpenUserInfo} isActive={isOpenUserInfo}/>
         </header>
     );
 };

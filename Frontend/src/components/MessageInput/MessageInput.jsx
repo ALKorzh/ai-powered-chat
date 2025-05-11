@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import classes from './MessageInput.module.css';
 import VoiceVisualizer from '../VoiceVisualizer/VoiceVisualizer.jsx';
 import axios from "axios";
+import RecordRTC from 'recordrtc';
 
-const MessageInput = ({ isActive, setIsActive, chatId, userId }) => {
+
+const MessageInput = ({ isActive, setIsActive}) => {
     const [textMessage, setTextMessage] = useState('');
     const textareaRef = useRef(null);
     const [recordTime, setRecordTime] = useState(0);
@@ -12,13 +14,11 @@ const MessageInput = ({ isActive, setIsActive, chatId, userId }) => {
     const audioChunksRef = useRef([]);
 
     const handleSendTextMessage = async () => {
-        if (!textMessage.trim() || !userId || !chatId) return;
+        if (!textMessage.trim()) return;
 
         try {
-            const response = await axios.post(`http://localhost:8000/${userId}/${chatId}`, {
+            const response = await axios.post(`http://localhost:8000/api/chat`, {
                 message: textMessage,
-                userId,
-                chatId,
             });
             console.log('Text message sent!', response.data);
             setTextMessage('');
@@ -58,59 +58,77 @@ const MessageInput = ({ isActive, setIsActive, chatId, userId }) => {
     }, [textMessage]);
 
     useEffect(() => {
+        let recorder;
+        let stream;
+
         const startRecording = async () => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/ogg; codecs=opus' });
-                mediaRecorderRef.current = mediaRecorder;
-                audioChunksRef.current = [];
-
-                mediaRecorder.ondataavailable = (event) => {
-                    if (event.data.size > 0) {
-                        audioChunksRef.current.push(event.data);
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                recorder = new RecordRTC(stream, {
+                    type: 'audio',
+                    mimeType: 'audio/wav',
+                    recorderType: RecordRTC.StereoAudioRecorder,
+                    desiredSampRate: 16000,
+                    numberOfAudioChannels: 1,
+                    timeSlice: 1000,
+                    ondataavailable: (blob) => {
+                        audioChunksRef.current.push(blob);
                     }
-                };
+                });
 
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/ogg; codecs=opus' });
-                    const audioFile = new File([audioBlob], 'recording.ogg', { type: 'audio/ogg' });
-
-                    const formData = new FormData();
-                    formData.append('audio', audioFile);
-                    formData.append('userId', userId);
-                    formData.append('chatId', chatId);
-
-                    try {
-                        const response = await axios.post('http://localhost:8000/upload', formData, {
-                            headers: {
-                                'Content-Type': 'multipart/form-data',
-                            },
-                        });
-                        console.log('Audio uploaded!', response.data);
-                    } catch (error) {
-                        console.error('Audio upload failed:', error);
-                    }
-                };
-
-                mediaRecorder.start();
+                mediaRecorderRef.current = { recorder, stream };
+                recorder.startRecording();
             } catch (err) {
                 console.error('Microphone access denied:', err);
+            }
+        };
+
+        const stopRecording = async () => {
+            if (mediaRecorderRef.current?.recorder) {
+                const { recorder } = mediaRecorderRef.current;
+
+                return new Promise(resolve => {
+                    recorder.stopRecording(async () => {
+                        const blob = recorder.getBlob();
+                        const audioFile = new File([blob], 'recording.wav', { type: 'audio/wav' });
+
+                        const formData = new FormData();
+                        formData.append('voice', audioFile);
+
+                        try {
+                            const response = await axios.post('http://localhost:8000/api/chat/voice', formData, {
+                                headers: { 'Content-Type': 'multipart/form-data' },
+                            });
+                            console.log('WAV voice message sent!', response.data);
+                        } catch (error) {
+                            console.error('Voice message failed:', error);
+                        }
+
+                        resolve();
+                    });
+                });
             }
         };
 
         if (isActive) {
             startRecording();
         } else if (mediaRecorderRef.current) {
-            mediaRecorderRef.current.stop();
+            stopRecording().then(() => {
+                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+                mediaRecorderRef.current = null;
+            });
         }
 
         return () => {
             if (mediaRecorderRef.current) {
                 mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+                if (mediaRecorderRef.current.recorder.state === 'recording') {
+                    mediaRecorderRef.current.recorder.stopRecording();
+                }
                 mediaRecorderRef.current = null;
             }
         };
-    }, [isActive, userId, chatId]);
+    }, [isActive]);
 
     const formatTime = (time) => {
         const ms = String(time % 1000).padStart(3, '0').slice(0, 2);

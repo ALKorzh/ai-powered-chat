@@ -3,13 +3,13 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import classes from './UserInfoModal.module.css';
 
-const UserInfoModal = ({ isActive, setIsActive, userId }) => {
+const UserInfoModal = ({ isActive, setIsActive}) => {
     const navigate = useNavigate();
     const [userEmail, setUserEmail] = useState('');  // теперь email будет динамичным 👇
 
     const handleLogout = async () => {
         try {
-            await axios.post(`http://localhost:8000/${userId}/logout`);
+            await axios.post(`http://localhost:8000/api/logout`);
             localStorage.removeItem('token');
             navigate('/login');
         } catch (error) {
@@ -20,7 +20,7 @@ const UserInfoModal = ({ isActive, setIsActive, userId }) => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/${userId}`, {
+                const response = await axios.get(`http://localhost:8000/api`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
