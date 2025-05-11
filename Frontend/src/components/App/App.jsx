@@ -5,6 +5,7 @@ import Layout from "../../routes/Layout/Layout.jsx";
 import Home from "../../routes/Home/Home.jsx";
 import Authorization from "../../routes/Authorization/Authorization.jsx";
 import Registration from "../../routes/Registration/Registration.jsx";
+import AuthCallback from "../../routes/AuthCallback/AuthCallback.jsx";
 
 const router = createBrowserRouter([
     {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
             {
                 path: '/registration',
                 element: <Registration/>
+            },
+            {
+                path: '/auth/callback',
+                element: <AuthCallback/>
             }
         ]
     }
