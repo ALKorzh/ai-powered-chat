@@ -4,6 +4,7 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding-right: 2rem;
 }
 
 .showChatList {
@@ -25,6 +26,10 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.controlPanel > h1 {
+    margin-left: 1rem;
 }
 
 .hideChatListBtn {
