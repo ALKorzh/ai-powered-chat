@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     GOOGLE_API_SCOPE: str
     GOOGLE_DISCOVERY_URL: str
 
+    # Gemini API
+    GEMINI_API_KEY: str
+
     class Config:
         env_file = ".env" 
 

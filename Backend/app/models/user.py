@@ -1,6 +1,9 @@
 from typing import Optional
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import declarative_base, relationship
+from passlib.hash import bcrypt
+
 
 Base = declarative_base()
 
@@ -12,4 +15,8 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     username = Column(String)
     hashed_password = Column(String, nullable=True)
+
+    # Relationship with ChatMessage
+    messages = relationship("ChatMessage", back_populates="user")
+
 

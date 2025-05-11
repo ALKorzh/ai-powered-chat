@@ -1,3 +1,4 @@
+from app.api.v1 import auth, chat
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
@@ -38,5 +39,8 @@ oauth = init_oauth()
 app.state.oauth = oauth
 
 # Include routers
-from app.api.v1 import auth
+
+
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(chat.router, prefix="/api", tags=["chat"])
+
