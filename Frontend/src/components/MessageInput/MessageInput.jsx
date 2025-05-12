@@ -17,8 +17,19 @@ const MessageInput = ({ isActive, setIsActive}) => {
         if (!textMessage.trim()) return;
 
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('No authentication token found');
+                return;
+            }
+
             const response = await axios.post(`http://localhost:8000/api/chat`, {
                 message: textMessage,
+                message_type: "TEXT"
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
             console.log('Text message sent!', response.data);
             setTextMessage('');
@@ -96,8 +107,17 @@ const MessageInput = ({ isActive, setIsActive}) => {
                         formData.append('voice', audioFile);
 
                         try {
+                            const token = localStorage.getItem('token');
+                            if (!token) {
+                                console.error('No authentication token found');
+                                return;
+                            }
+
                             const response = await axios.post('http://localhost:8000/api/chat/voice', formData, {
-                                headers: { 'Content-Type': 'multipart/form-data' },
+                                headers: { 
+                                    'Content-Type': 'multipart/form-data',
+                                    'Authorization': `Bearer ${token}`
+                                },
                             });
                             console.log('WAV voice message sent!', response.data);
                         } catch (error) {

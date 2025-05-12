@@ -7,20 +7,18 @@ import classes from './Home.module.css'
 import {useNavigate} from "react-router-dom";
 
 const Home = () => {
-
     const [isChatListVisible, setIsChatListVisible] = useState(false)
-    const [isRecordActive, setIsRecordActive] = useState(false )
+    const [isRecordActive, setIsRecordActive] = useState(false)
     const [isOpenUserInfo, setIsOpenUserInfo] = useState(false)
 
-    // const navigate = useNavigate();
-    //
-    // useEffect(() => {
-    //     const token = localStorage.getItem('token');
-    //     if (!token) {
-    //         navigate('/authorization');
-    //     }
-    // }, []);
+    const navigate = useNavigate();
 
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/authorization');
+        }
+    }, [navigate]);
 
     return (
         <div className={isChatListVisible ? classes.showAside : classes.hideAside}>
