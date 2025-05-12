@@ -9,8 +9,31 @@ const VoiceVisualizer = ({ isActive }) => {
     const sourceRef = useRef(null);
     const historyRef = useRef([]);
 
+    const cleanup = () => {
+        if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current);
+            animationRef.current = null;
+        }
+        if (sourceRef.current) {
+            sourceRef.current.disconnect();
+            sourceRef.current = null;
+        }
+        if (audioContextRef.current) {
+            audioContextRef.current.close();
+            audioContextRef.current = null;
+        }
+        if (canvasRef.current) {
+            const ctx = canvasRef.current.getContext('2d');
+            ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        }
+        historyRef.current = [];
+    };
+
     useEffect(() => {
-        if (!isActive) return;
+        if (!isActive) {
+            cleanup();
+            return;
+        }
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -29,6 +52,11 @@ const VoiceVisualizer = ({ isActive }) => {
             sourceRef.current.connect(analyserRef.current);
 
             const draw = () => {
+                if (!isActive) {
+                    cleanup();
+                    return;
+                }
+
                 animationRef.current = requestAnimationFrame(draw);
 
                 analyserRef.current.getByteFrequencyData(dataArrayRef.current);
@@ -55,14 +83,12 @@ const VoiceVisualizer = ({ isActive }) => {
             };
 
             draw();
+        }).catch(err => {
+            console.error('Error accessing microphone:', err);
+            cleanup();
         });
 
-        return () => {
-            cancelAnimationFrame(animationRef.current);
-            if (audioContextRef.current) {
-                audioContextRef.current.close();
-            }
-        };
+        return cleanup;
     }, [isActive]);
 
     return <canvas ref={canvasRef} />;

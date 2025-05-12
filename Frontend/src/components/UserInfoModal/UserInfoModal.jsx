@@ -9,9 +9,9 @@ const UserInfoModal = ({ isActive, setIsActive}) => {
 
     const handleLogout = async () => {
         try {
-            await axios.post(`http://localhost:8000/api/logout`);
+            await axios.post(`http://localhost:8000/auth/logout`);
             localStorage.removeItem('token');
-            navigate('/login');
+            navigate('/authorization');
         } catch (error) {
             console.error('Logout failed:', error);
         }
@@ -20,7 +20,7 @@ const UserInfoModal = ({ isActive, setIsActive}) => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/api`, {
+                const response = await axios.get(`http://localhost:8000/auth/users/me/`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }

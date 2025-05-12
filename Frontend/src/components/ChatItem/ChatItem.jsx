@@ -7,7 +7,9 @@ const ChatItem = ({isVisible, setIsRecordActive, isRecordActive, chatId, userId}
     return (
         <div className={isVisible ? `${classes.showChatList} ${classes.chatItem}` : `${classes.hideChatList} ${classes.chatItem}`}>
             <MessageList/>
-            <MessageInput isActive={isRecordActive} setIsActive={setIsRecordActive} chatId={chatId} userId={userId}/>
+            <div className={classes.inputContainer}>
+                <MessageInput isActive={isRecordActive} setIsActive={setIsRecordActive} chatId={chatId} userId={userId}/>
+            </div>
         </div>
     );
 };

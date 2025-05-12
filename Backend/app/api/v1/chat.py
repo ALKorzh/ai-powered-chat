@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Dict
 import re
 import json
+import logging
 
 from app.dependencies import get_db
 from app.services.gemini_service import GeminiService
@@ -15,6 +16,7 @@ from app.models.user import User
 router = APIRouter()
 gemini_service = GeminiService()
 speech_service = SpeechService()
+logger = logging.getLogger(__name__)
 
 def parse_corrections(response: str) -> tuple[str, List[Dict]]:
     """Parse the response to extract corrections and the actual response."""
@@ -77,31 +79,44 @@ async def create_voice_message(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Read audio file
-    audio_data = await audio_file.read()
-    
-    # Transcribe audio to text
-    transcribed_text = await speech_service.transcribe_audio(audio_data, audio_file.filename)
-    
-    # Get response from Gemini
-    response = await gemini_service.get_response(transcribed_text)
-    
-    # Parse corrections and actual response
-    actual_response, corrections = parse_corrections(response)
-    
-    # Create chat message in database
-    db_message = ChatMessage(
-        user_id=current_user.id,
-        message_type=MessageType.VOICE,  # The enum instance has the correct lowercase value
-        message=transcribed_text,
-        response=actual_response,
-        corrections=json.dumps(corrections) if corrections else None
-    )
-    db.add(db_message)
-    db.commit()
-    db.refresh(db_message)
-    
-    return db_message
+    try:
+        logger.info(f"Received voice message from user {current_user.id}")
+        logger.info(f"Audio file details - filename: {audio_file.filename}, content_type: {audio_file.content_type}")
+        
+        # Read audio file
+        audio_data = await audio_file.read()
+        logger.info(f"Audio data size: {len(audio_data)} bytes")
+        
+        # Transcribe audio to text
+        logger.info("Starting audio transcription...")
+        transcribed_text = await speech_service.transcribe_audio(audio_data, audio_file.filename)
+        logger.info(f"Audio transcribed successfully: {transcribed_text[:100]}...")
+        
+        # Get response from Gemini
+        logger.info("Getting response from Gemini...")
+        response = await gemini_service.get_response(transcribed_text)
+        logger.info("Received response from Gemini")
+        
+        # Parse corrections and actual response
+        actual_response, corrections = parse_corrections(response)
+        
+        # Create chat message in database
+        db_message = ChatMessage(
+            user_id=current_user.id,
+            message_type=MessageType.VOICE,
+            message=transcribed_text,
+            response=actual_response,
+            corrections=json.dumps(corrections) if corrections else None
+        )
+        db.add(db_message)
+        db.commit()
+        db.refresh(db_message)
+        logger.info(f"Voice message processed and saved to database with id {db_message.id}")
+        
+        return db_message
+    except Exception as e:
+        logger.error(f"Error processing voice message: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error processing voice message: {str(e)}")
 
 @router.get("/chat/history", response_model=List[ChatMessageResponse])
 async def get_chat_history(
