@@ -5,15 +5,15 @@ import enum
 from .user import Base
 
 class MessageType(enum.Enum):
-    TEXT = "text"
-    VOICE = "voice"
+    TEXT = "TEXT"
+    VOICE = "VOICE"
 
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    message_type = Column(Enum(MessageType), default=MessageType.TEXT)
+    message_type = Column(Enum(MessageType, name='message_type', create_constraint=True, validate_strings=True), default=MessageType.TEXT)
     message = Column(String)
     response = Column(String)
     corrections = Column(JSON, nullable=True)  # Store corrections as JSON

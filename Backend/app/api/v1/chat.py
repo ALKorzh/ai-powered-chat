@@ -60,7 +60,7 @@ async def create_chat_message(
     # Create chat message in database
     db_message = ChatMessage(
         user_id=current_user.id,
-        message_type=message.message_type,
+        message_type=message.message_type.value,  # Use the enum value directly
         message=message.message,
         response=actual_response,
         corrections=json.dumps(corrections) if corrections else None
@@ -92,7 +92,7 @@ async def create_voice_message(
     # Create chat message in database
     db_message = ChatMessage(
         user_id=current_user.id,
-        message_type=MessageType.VOICE,
+        message_type=MessageType.VOICE,  # The enum instance has the correct lowercase value
         message=transcribed_text,
         response=actual_response,
         corrections=json.dumps(corrections) if corrections else None
