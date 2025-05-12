@@ -3,9 +3,10 @@ import classes from './MessageInput.module.css';
 import VoiceVisualizer from '../VoiceVisualizer/VoiceVisualizer.jsx';
 import axios from "axios";
 import RecordRTC from 'recordrtc';
-
+import { useNavigate } from 'react-router-dom';
 
 const MessageInput = ({ isActive, setIsActive}) => {
+    const navigate = useNavigate();
     const [textMessage, setTextMessage] = useState('');
     const textareaRef = useRef(null);
     const [recordTime, setRecordTime] = useState(0);
@@ -13,16 +14,24 @@ const MessageInput = ({ isActive, setIsActive}) => {
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
 
+    const getAuthToken = () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+        return token;
+    };
+
+    const handleAuthError = () => {
+        localStorage.removeItem('token');
+        navigate('/authorization');
+    };
+
     const handleSendTextMessage = async () => {
         if (!textMessage.trim()) return;
 
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                console.error('No authentication token found');
-                return;
-            }
-
+            const token = getAuthToken();
             const response = await axios.post(`http://localhost:8000/api/chat`, {
                 message: textMessage,
                 message_type: "TEXT"
@@ -35,6 +44,71 @@ const MessageInput = ({ isActive, setIsActive}) => {
             setTextMessage('');
         } catch (error) {
             console.error('Text message failed:', error);
+            if (error.response?.status === 401) {
+                handleAuthError();
+            }
+        }
+    };
+
+    const stopRecording = async () => {
+        if (mediaRecorderRef.current?.recorder) {
+            const { recorder } = mediaRecorderRef.current;
+
+            return new Promise(resolve => {
+                recorder.stopRecording(async () => {
+                    try {
+                        console.log('Stopping recording...');
+                        const blob = recorder.getBlob();
+                        console.log('Blob created:', blob.size, 'bytes');
+
+                        const MAX_FILE_SIZE = 10 * 1024 * 1024;
+                        if (blob.size > MAX_FILE_SIZE) {
+                            throw new Error('Audio file is too large. Maximum size is 10MB');
+                        }
+                        
+                        const audioFile = new File([blob], 'recording.wav', { type: 'audio/wav' });
+                        console.log('Audio file created:', audioFile.size, 'bytes');
+
+                        const formData = new FormData();
+                        formData.append('audio_file', audioFile);
+                        console.log('FormData created with audio file');
+
+                        const token = getAuthToken();
+                        console.log('Token retrieved:', token ? 'Yes' : 'No');
+
+                        console.log('Sending voice message to server...');
+                        const response = await axios.post('http://localhost:8000/api/chat/voice', formData, {
+                            headers: { 
+                                'Content-Type': 'multipart/form-data',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            timeout: 30000,
+                            onUploadProgress: (progressEvent) => {
+                                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                                console.log('Upload progress:', percentCompleted, '%');
+                            }
+                        });
+                        console.log('WAV voice message sent successfully!', response.data);
+                    } catch (error) {
+                        console.error('Voice message failed:', {
+                            message: error.message,
+                            response: error.response?.data,
+                            status: error.response?.status,
+                            headers: error.response?.headers
+                        });
+                        if (error.response?.status === 401) {
+                            handleAuthError();
+                        }
+                        throw error;
+                    } finally {
+                        if (mediaRecorderRef.current) {
+                            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+                            mediaRecorderRef.current = null;
+                        }
+                        resolve();
+                    }
+                });
+            });
         }
     };
 
@@ -91,52 +165,12 @@ const MessageInput = ({ isActive, setIsActive}) => {
                 recorder.startRecording();
             } catch (err) {
                 console.error('Microphone access denied:', err);
-            }
-        };
-
-        const stopRecording = async () => {
-            if (mediaRecorderRef.current?.recorder) {
-                const { recorder } = mediaRecorderRef.current;
-
-                return new Promise(resolve => {
-                    recorder.stopRecording(async () => {
-                        const blob = recorder.getBlob();
-                        const audioFile = new File([blob], 'recording.wav', { type: 'audio/wav' });
-
-                        const formData = new FormData();
-                        formData.append('voice', audioFile);
-
-                        try {
-                            const token = localStorage.getItem('token');
-                            if (!token) {
-                                console.error('No authentication token found');
-                                return;
-                            }
-
-                            const response = await axios.post('http://localhost:8000/api/chat/voice', formData, {
-                                headers: { 
-                                    'Content-Type': 'multipart/form-data',
-                                    'Authorization': `Bearer ${token}`
-                                },
-                            });
-                            console.log('WAV voice message sent!', response.data);
-                        } catch (error) {
-                            console.error('Voice message failed:', error);
-                        }
-
-                        resolve();
-                    });
-                });
+                setIsActive(false);
             }
         };
 
         if (isActive) {
             startRecording();
-        } else if (mediaRecorderRef.current) {
-            stopRecording().then(() => {
-                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-                mediaRecorderRef.current = null;
-            });
         }
 
         return () => {
@@ -163,7 +197,32 @@ const MessageInput = ({ isActive, setIsActive}) => {
         if (textMessage.trim()) {
             await handleSendTextMessage();
         } else {
-            setIsActive(prev => !prev);
+            if (!isActive) {
+                setIsActive(true);
+            } else {
+                await handleStopRecording();
+            }
+        }
+    };
+
+    const handleStopRecording = async () => {
+        if (mediaRecorderRef.current) {
+            try {
+                setIsActive(false);
+                await stopRecording();
+            } catch (error) {
+                console.error('Error stopping recording:', error);
+            }
+        }
+    };
+
+    const handleCancelRecording = () => {
+        if (mediaRecorderRef.current) {
+            mediaRecorderRef.current.recorder.stopRecording(() => {
+                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+                mediaRecorderRef.current = null;
+                setIsActive(false);
+            });
         }
     };
 
@@ -195,14 +254,14 @@ const MessageInput = ({ isActive, setIsActive}) => {
                     <div>
                         <VoiceVisualizer isActive={isActive} />
                     </div>
-                    <button onClick={handleButtonClick}
+                    <button onClick={handleStopRecording}
                             type='button'
                             className={classes.sendMessageBtn}>
                         <img src="/images/send_message.svg" alt="send" />
                     </button>
                     <button className={classes.sendMessageBtn}
                             type="button"
-                            onClick={() => setIsActive(false)}>
+                            onClick={handleCancelRecording}>
                         <img src="/images/stop_message.svg" alt="stop" />
                     </button>
                 </div>

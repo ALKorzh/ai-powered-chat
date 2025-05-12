@@ -5,11 +5,26 @@ header {
     align-items: center;
     justify-content: space-between;
     padding-right: 2rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
 }
 
 .showChatList {
-    grid-row: 1;
-    grid-column: 2;
+    margin-left: 250px;
+    width: calc(100% - 250px);
+}
+
+.hidden {
+    transform: translateY(-100%);
+}
+
+.visible {
+    transform: translateY(0);
 }
 
 .headerBtn > img {

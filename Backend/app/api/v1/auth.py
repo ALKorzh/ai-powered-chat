@@ -31,6 +31,10 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return {"email": current_user.email}
 
+@router.post("/logout")
+async def logout():
+    return {"message": "Successfully logged out"}
+
 # Google OAuth2 routes
 @router.get("/login/google")
 async def google_login(request: Request):

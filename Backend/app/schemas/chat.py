@@ -29,6 +29,7 @@ class ChatMessageResponse(ChatMessageBase):
     user_id: int
     response: str
     corrections: Optional[List[Correction]] = None
+    is_corrected: bool = False
     timestamp: datetime
 
     class Config:

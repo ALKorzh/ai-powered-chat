@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import Header from "../../components/Header/Header.jsx";
-import Footer from "../../components/Footer/Footer.jsx";
 import ChatList from "../../components/ChatList/ChatList.jsx";
 import ChatItem from "../../components/ChatItem/ChatItem.jsx";
 import classes from './Home.module.css'
@@ -25,7 +24,6 @@ const Home = () => {
             <Header isChatListVisible={isChatListVisible} setIsChatListVisible={setIsChatListVisible} setIsOpenUserInfo={setIsOpenUserInfo} isOpenUserInfo={isOpenUserInfo} />
             <ChatList isVisible={isChatListVisible}/>
             <ChatItem isVisible={isChatListVisible} isRecordActive={isRecordActive} setIsRecordActive={setIsRecordActive}/>
-            <Footer isVisible={isChatListVisible}/>
         </div>
     );
 };
