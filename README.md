@@ -88,15 +88,8 @@ This project consists of a full-stack application with a React frontend and Fast
    npm install
    ```
 
-3. Create a `.env` file in the Frontend directory with the following:
-   ```
-   VITE_API_URL=http://localhost:8000
-   ```
-
-4. Start the development server:
+3. Start the development server:
    ```
    npm run dev
    ```
    The application will be available at http://localhost:5173
-
-
